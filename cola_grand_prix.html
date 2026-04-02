@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cola Grand Prix 🏁</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --pepsi-blue:   #004B93;
+    --pepsi-red:    #E31837;
+    --pepsi-light:  #56A0D3;
+    --cola-red:     #F40009;
+    --cola-dark:    #900000;
+    --cola-cream:   #FFF5E0;
+    --track-bg:     #1a1a2e;
+    --asphalt:      #2d2d3a;
+    --gold:         #FFD700;
+    --silver:       #C0C0C0;
+    --white:        #ffffff;
+    --glow-blue:    rgba(86,160,211,0.6);
+    --glow-red:     rgba(244,0,9,0.6);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--track-bg);
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  /* ── STARFIELD ── */
+  #stars {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(1px 1px at 10% 15%, white .5px, transparent 0),
+      radial-gradient(1px 1px at 30% 5%,  white .5px, transparent 0),
+      radial-gradient(1px 1px at 55% 20%, white .5px, transparent 0),
+      radial-gradient(1px 1px at 75% 8%,  white .5px, transparent 0),
+      radial-gradient(1px 1px at 90% 25%, white .5px, transparent 0),
+      radial-gradient(1px 1px at 20% 40%, white .4px, transparent 0),
+      radial-gradient(1px 1px at 60% 60%, white .4px, transparent 0),
+      radial-gradient(1px 1px at 85% 50%, white .4px, transparent 0),
+      radial-gradient(1px 1px at 40% 80%, white .3px, transparent 0),
+      radial-gradient(1px 1px at 70% 90%, white .3px, transparent 0),
+      linear-gradient(180deg, #0d0d1a 0%, #1a1a2e 50%, #0d0d1a 100%);
+    pointer-events: none;
+  }
+
+  /* ── WRAPPER ── */
+  .wrapper {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 960px;
+    padding: 20px 16px 40px;
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center; padding: 24px 0 16px;
+    animation: fadeDown .8s ease both;
+  }
+  .header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: 4px;
+    background: linear-gradient(90deg, var(--pepsi-light), var(--gold), var(--cola-red));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 0 18px rgba(255,215,0,.4));
+  }
+  .header p {
+    font-size: 1rem; letter-spacing: 2px; color: #aab; margin-top: 6px;
+  }
+
+  /* ── CARS SHOWCASE ── */
+  .showcase {
+    display: flex; gap: 24px; align-items: stretch; justify-content: center;
+    width: 100%; margin: 12px 0;
+    animation: fadeUp .9s .2s ease both;
+  }
+  .car-card {
+    flex: 1; max-width: 260px;
+    border-radius: 16px;
+    padding: 20px 16px 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    position: relative; overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    backdrop-filter: blur(6px);
+    transition: transform .3s, box-shadow .3s;
+  }
+  .car-card:hover { transform: translateY(-4px); }
+  .car-card.pepsi {
+    background: linear-gradient(145deg, rgba(0,75,147,.35), rgba(0,75,147,.12));
+    box-shadow: 0 0 32px rgba(86,160,211,.2), inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .car-card.pepsi:hover { box-shadow: 0 8px 40px rgba(86,160,211,.45); }
+  .car-card.cola {
+    background: linear-gradient(145deg, rgba(244,0,9,.35), rgba(144,0,0,.12));
+    box-shadow: 0 0 32px rgba(244,0,9,.2), inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .car-card.cola:hover { box-shadow: 0 8px 40px rgba(244,0,9,.45); }
+
+  .car-card .badge {
+    font-family: 'Orbitron', sans-serif; font-size: .65rem; letter-spacing: 3px;
+    padding: 4px 12px; border-radius: 20px; font-weight: 700;
+  }
+  .pepsi .badge { background: var(--pepsi-blue); color: #fff; }
+  .cola  .badge { background: var(--cola-red);   color: #fff; }
+
+  .car-svg { width: 180px; height: 90px; }
+
+  .car-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(.9rem, 2vw, 1.2rem);
+    font-weight: 700; letter-spacing: 2px;
+  }
+  .pepsi .car-name { color: var(--pepsi-light); }
+  .cola  .car-name { color: var(--cola-red); }
+
+  .car-stat { font-size: .82rem; color: #99a; letter-spacing: 1px; }
+
+  /* ── TRACK AREA ── */
+  .track-container {
+    width: 100%; border-radius: 20px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,.08);
+    background: linear-gradient(180deg, #1e1e32 0%, #14141f 100%);
+    box-shadow: 0 4px 40px rgba(0,0,0,.6);
+    animation: fadeUp .9s .35s ease both;
+  }
+
+  .track-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px 10px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+  }
+  .track-header .lap-info {
+    font-family: 'Orbitron', sans-serif; font-size: .7rem;
+    letter-spacing: 2px; color: var(--gold);
+  }
+  .event-ticker {
+    font-size: .8rem; letter-spacing: 1px; color: #ccc;
+    min-height: 1.2em; transition: opacity .3s;
+    font-style: italic;
+  }
+
+  /* ── LANE ── */
+  .lane {
+    padding: 16px 24px 12px;
+    position: relative;
+  }
+  .lane + .lane {
+    border-top: 1px solid rgba(255,255,255,.05);
+  }
+
+  .lane-label {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .lane-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .lane-label span {
+    font-family: 'Orbitron', sans-serif; font-size: .72rem;
+    letter-spacing: 2px; font-weight: 700;
+  }
+  .lane-speed {
+    margin-left: auto; font-size: .75rem; color: #aaa;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  /* ── TRACK ROAD ── */
+  .road {
+    position: relative; height: 72px;
+    background: var(--asphalt);
+    border-radius: 8px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,.06);
+  }
+
+  /* Dashes */
+  .road::before {
+    content: '';
+    position: absolute; top: 50%; left: 0;
+    width: 100%; height: 2px;
+    transform: translateY(-50%);
+    background: repeating-linear-gradient(
+      90deg, transparent 0, transparent 14px,
+      rgba(255,255,255,.12) 14px, rgba(255,255,255,.12) 28px
+    );
+    animation: dashMove 0.6s linear infinite;
+  }
+
+  /* Finish line */
+  .finish-line {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 14px;
+    background: repeating-linear-gradient(
+      180deg,
+      #fff 0px, #fff 7px,
+      #111 7px, #111 14px
+    );
+    z-index: 3;
+  }
+  .finish-flag {
+    position: absolute; right: 14px; top: -28px; font-size: 1.4rem;
+    animation: flagWave .6s ease-in-out infinite alternate;
+  }
+
+  /* Car on road */
+  .car-runner {
+    position: absolute; top: 50%;
+    transform: translateY(-50%);
+    transition: left 0.09s linear;
+    z-index: 2;
+    display: flex; align-items: center;
+  }
+  .car-runner svg { width: 120px; height: 56px; }
+
+  /* Exhaust particles */
+  .exhaust {
+    position: absolute; left: -12px; top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .exhaust-puff {
+    width: 8px; height: 4px; border-radius: 50%;
+    background: rgba(200,200,200,.35);
+    animation: puff 0.4s ease-out infinite;
+  }
+  .exhaust-puff:nth-child(2) { animation-delay: .13s; opacity: .6; }
+  .exhaust-puff:nth-child(3) { animation-delay: .26s; opacity: .3; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    margin-top: 10px; display: flex; align-items: center; gap: 10px;
+  }
+  .progress-track {
+    flex: 1; height: 6px; border-radius: 3px;
+    background: rgba(255,255,255,.08); overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 3px;
+    width: 0%; transition: width 0.09s linear;
+  }
+  .pepsi-lane .progress-fill { background: linear-gradient(90deg, var(--pepsi-blue), var(--pepsi-light)); box-shadow: 0 0 8px var(--glow-blue); }
+  .cola-lane  .progress-fill { background: linear-gradient(90deg, var(--cola-dark), var(--cola-red));   box-shadow: 0 0 8px var(--glow-red); }
+  .progress-pct {
+    font-family: 'Orbitron', sans-serif; font-size: .68rem;
+    width: 38px; text-align: right; color: #bbb;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex; gap: 14px; padding: 18px 24px;
+    border-top: 1px solid rgba(255,255,255,.07);
+    justify-content: center;
+  }
+  .btn {
+    font-family: 'Orbitron', sans-serif; font-size: .75rem;
+    letter-spacing: 2px; font-weight: 700;
+    padding: 12px 28px; border-radius: 8px; border: none;
+    cursor: pointer; transition: all .2s;
+    text-transform: uppercase;
+  }
+  .btn-start {
+    background: linear-gradient(135deg, #00c853, #00960a);
+    color: #fff; box-shadow: 0 0 20px rgba(0,200,83,.3);
+  }
+  .btn-start:hover { box-shadow: 0 0 30px rgba(0,200,83,.6); transform: scale(1.04); }
+  .btn-reset {
+    background: rgba(255,255,255,.08); color: #bbb;
+    border: 1px solid rgba(255,255,255,.12);
+  }
+  .btn-reset:hover { background: rgba(255,255,255,.14); color: #fff; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+  /* ── SCOREBOARD ── */
+  .scoreboard {
+    width: 100%; display: flex; gap: 12px;
+    margin: 12px 0 0; animation: fadeUp .9s .5s ease both;
+  }
+  .score-card {
+    flex: 1; padding: 14px 18px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .score-card.pepsi-score { background: rgba(0,75,147,.18); }
+  .score-card.cola-score  { background: rgba(244,0,9,.18); }
+  .score-label { font-size: .7rem; letter-spacing: 2px; color: #888; }
+  .score-val {
+    font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 900;
+  }
+  .pepsi-score .score-val { color: var(--pepsi-light); }
+  .cola-score  .score-val { color: var(--cola-red); }
+
+  /* ── WINNER OVERLAY ── */
+  #winner-overlay {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,.82);
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+  }
+  #winner-overlay.show { display: flex; }
+
+  .winner-box {
+    background: linear-gradient(145deg, #0d0d24, #1a1a3e);
+    border-radius: 24px; padding: 48px 56px;
+    border: 1px solid rgba(255,255,255,.12);
+    text-align: center; max-width: 500px; width: 90%;
+    box-shadow: 0 0 80px rgba(0,0,0,.8), 0 0 120px rgba(255,215,0,.12);
+    animation: popIn .5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  .winner-trophy { font-size: 4rem; animation: trophySpin 1.5s ease-in-out infinite alternate; }
+  .winner-title {
+    font-family: 'Orbitron', sans-serif; font-size: clamp(1rem,4vw,1.8rem);
+    font-weight: 900; letter-spacing: 3px; margin: 12px 0;
+    background: linear-gradient(90deg, var(--gold), #fff, var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .winner-name {
+    font-family: 'Orbitron', sans-serif; font-size: clamp(1.4rem,5vw,2.4rem);
+    font-weight: 900; letter-spacing: 4px; margin-bottom: 6px;
+  }
+  .winner-name.pepsi { color: var(--pepsi-light); text-shadow: 0 0 30px var(--glow-blue); }
+  .winner-name.cola  { color: var(--cola-red);    text-shadow: 0 0 30px var(--glow-red); }
+  .winner-sub { font-size: .9rem; color: #aab; letter-spacing: 1px; margin-bottom: 24px; }
+
+  .confetti-line { font-size: 1.5rem; letter-spacing: 4px; animation: confettiShake .4s ease-in-out infinite alternate; }
+
+  .btn-again {
+    margin-top: 20px; width: 100%;
+    background: linear-gradient(135deg, var(--gold), #e6b800);
+    color: #111; font-family: 'Orbitron', sans-serif;
+    font-size: .8rem; font-weight: 900; letter-spacing: 3px;
+    padding: 14px; border-radius: 8px; border: none;
+    cursor: pointer; transition: all .2s;
+  }
+  .btn-again:hover { box-shadow: 0 0 30px rgba(255,215,0,.5); transform: scale(1.03); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown  { from { opacity:0; transform: translateY(-20px); } to { opacity:1; transform: none; } }
+  @keyframes fadeUp    { from { opacity:0; transform: translateY(20px);  } to { opacity:1; transform: none; } }
+  @keyframes dashMove  { from { background-position: 0 0; } to { background-position: -28px 0; } }
+  @keyframes flagWave  { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+  @keyframes puff      { 0%{transform:translateX(0) scale(1);opacity:.4;} 100%{transform:translateX(-20px) scale(2.5);opacity:0;} }
+  @keyframes popIn     { from{opacity:0;transform:scale(.7);} to{opacity:1;transform:scale(1);} }
+  @keyframes trophySpin{ from{transform:rotate(-6deg) scale(1);} to{transform:rotate(6deg) scale(1.08);} }
+  @keyframes confettiShake { from{transform:translateX(-4px);} to{transform:translateX(4px);} }
+  @keyframes engineRumble { 0%,100%{transform:translateY(-50%);} 50%{transform:translateY(calc(-50% - 1.5px));} }
+  @keyframes nitroGlow {
+    0%   { filter: drop-shadow(0 0  4px currentColor); }
+    50%  { filter: drop-shadow(0 0 16px currentColor); }
+    100% { filter: drop-shadow(0 0  4px currentColor); }
+  }
+  .racing { animation: engineRumble .08s linear infinite; }
+  .nitro  { animation: nitroGlow .2s linear infinite; }
+
+  /* countdown overlay */
+  #countdown {
+    display:none; position:fixed; inset:0; z-index:90;
+    background:rgba(0,0,0,.75); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center;
+  }
+  #countdown.show { display:flex; }
+  .cd-num {
+    font-family:'Orbitron',sans-serif; font-size:clamp(4rem,20vw,9rem);
+    font-weight:900; color:var(--gold);
+    text-shadow: 0 0 60px rgba(255,215,0,.7);
+    animation: cdPop .6s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes cdPop { from{transform:scale(2.5);opacity:0;} to{transform:scale(1);opacity:1;} }
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🏁 COLA GRAND PRIX 🏁</h1>
+    <p>THE ULTIMATE BEVERAGE BATTLE</p>
+  </div>
+
+  <!-- CAR SHOWCASE -->
+  <div class="showcase">
+    <!-- PEPSI CARD -->
+    <div class="car-card pepsi">
+      <div class="badge">LANE 1</div>
+      <svg class="car-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- body -->
+        <rect x="20" y="42" width="160" height="36" rx="6" fill="#004B93"/>
+        <!-- cabin -->
+        <path d="M58 42 L72 18 L138 18 L152 42Z" fill="#0060B6"/>
+        <!-- cabin glass -->
+        <path d="M75 40 L84 22 L130 22 L140 40Z" fill="#56A0D3" opacity=".7"/>
+        <!-- pepsi stripe -->
+        <rect x="20" y="52" width="160" height="6" fill="#E31837"/>
+        <rect x="20" y="58" width="160" height="6" fill="#fff"/>
+        <!-- wheels -->
+        <circle cx="58" cy="78" r="12" fill="#222"/>
+        <circle cx="58" cy="78" r="7"  fill="#555"/>
+        <circle cx="58" cy="78" r="3"  fill="#888"/>
+        <circle cx="148" cy="78" r="12" fill="#222"/>
+        <circle cx="148" cy="78" r="7"  fill="#555"/>
+        <circle cx="148" cy="78" r="3"  fill="#888"/>
+        <!-- headlight -->
+        <ellipse cx="178" cy="55" rx="8" ry="5" fill="#FFE082" opacity=".9"/>
+        <ellipse cx="22"  cy="55" rx="6" ry="4" fill="#B0BEC5" opacity=".6"/>
+        <!-- PEPSI text -->
+        <text x="100" y="50" text-anchor="middle" font-family="Orbitron,sans-serif" font-size="11" font-weight="900" fill="#FFD700" letter-spacing="2">PEPSI</text>
+        <!-- spoiler -->
+        <rect x="22" y="34" width="4" height="12" fill="#aaa"/>
+        <rect x="10" y="32" width="18" height="4" rx="2" fill="#ccc"/>
+      </svg>
+      <div class="car-name">PEPSI RACER</div>
+      <div class="car-stat">Top Speed: 🔵 Nitro Class</div>
+    </div>
+
+    <!-- VS -->
+    <div style="display:flex;align-items:center;padding:0 4px;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.5);letter-spacing:2px;">VS</span>
+    </div>
+
+    <!-- COLA CARD -->
+    <div class="car-card cola">
+      <div class="badge">LANE 2</div>
+      <svg class="car-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- body -->
+        <rect x="20" y="42" width="160" height="36" rx="6" fill="#C8000A"/>
+        <!-- cabin -->
+        <path d="M58 42 L72 18 L138 18 L152 42Z" fill="#E31010"/>
+        <!-- cabin glass -->
+        <path d="M75 40 L84 22 L130 22 L140 40Z" fill="#FF8A80" opacity=".55"/>
+        <!-- cream wave stripe (Coca-Cola style) -->
+        <path d="M20 54 Q60 48 100 54 Q140 60 180 54 L180 60 Q140 66 100 60 Q60 54 20 60Z" fill="#fff" opacity=".25"/>
+        <rect x="20" y="64" width="160" height="4" fill="#900000"/>
+        <!-- wheels -->
+        <circle cx="58" cy="78" r="12" fill="#1a0000"/>
+        <circle cx="58" cy="78" r="7"  fill="#4a0000"/>
+        <circle cx="58" cy="78" r="3"  fill="#888"/>
+        <circle cx="148" cy="78" r="12" fill="#1a0000"/>
+        <circle cx="148" cy="78" r="7"  fill="#4a0000"/>
+        <circle cx="148" cy="78" r="3"  fill="#888"/>
+        <!-- headlight -->
+        <ellipse cx="178" cy="55" rx="8" ry="5" fill="#FFE082" opacity=".9"/>
+        <ellipse cx="22"  cy="55" rx="6" ry="4" fill="#B0BEC5" opacity=".6"/>
+        <!-- COCA-COLA text -->
+        <text x="100" y="50" text-anchor="middle" font-family="Orbitron,sans-serif" font-size="8" font-weight="900" fill="#FFF5E0" letter-spacing="1">COCA-COLA</text>
+        <!-- spoiler -->
+        <rect x="22" y="34" width="4" height="12" fill="#aaa"/>
+        <rect x="10" y="32" width="18" height="4" rx="2" fill="#ccc"/>
+      </svg>
+      <div class="car-name">COCA-COLA RACER</div>
+      <div class="car-stat">Top Speed: 🔴 Turbo Class</div>
+    </div>
+  </div>
+
+  <!-- TRACK CONTAINER -->
+  <div class="track-container">
+    <div class="track-header">
+      <div class="lap-info">🏎️ RACE TRACK — 1 LAP</div>
+      <div class="event-ticker" id="event-ticker">Waiting for race start…</div>
+    </div>
+
+    <!-- PEPSI LANE -->
+    <div class="lane pepsi-lane">
+      <div class="lane-label">
+        <div class="lane-dot" style="background:var(--pepsi-light);box-shadow:0 0 6px var(--glow-blue);"></div>
+        <span style="color:var(--pepsi-light);">PEPSI</span>
+        <div class="lane-speed" id="pepsi-speed">— km/h</div>
+      </div>
+      <div class="road" id="pepsi-road">
+        <div class="finish-flag">🏁</div>
+        <div class="finish-line"></div>
+        <div class="car-runner" id="pepsi-car" style="left:4px;">
+          <div class="exhaust">
+            <div class="exhaust-puff"></div>
+            <div class="exhaust-puff"></div>
+            <div class="exhaust-puff"></div>
+          </div>
+          <!-- Pepsi inline car SVG -->
+          <svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="42" width="160" height="36" rx="6" fill="#004B93"/>
+            <path d="M58 42 L72 18 L138 18 L152 42Z" fill="#0060B6"/>
+            <path d="M75 40 L84 22 L130 22 L140 40Z" fill="#56A0D3" opacity=".7"/>
+            <rect x="20" y="52" width="160" height="6" fill="#E31837"/>
+            <rect x="20" y="58" width="160" height="6" fill="#fff"/>
+            <circle cx="58" cy="78" r="12" fill="#222"/>
+            <circle cx="58" cy="78" r="7"  fill="#555"/>
+            <circle cx="58" cy="78" r="3"  fill="#aaa"/>
+            <circle cx="148" cy="78" r="12" fill="#222"/>
+            <circle cx="148" cy="78" r="7"  fill="#555"/>
+            <circle cx="148" cy="78" r="3"  fill="#aaa"/>
+            <ellipse cx="178" cy="55" rx="8" ry="5" fill="#FFE082" opacity=".9"/>
+            <text x="100" y="50" text-anchor="middle" font-family="Orbitron,sans-serif" font-size="11" font-weight="900" fill="#FFD700" letter-spacing="2">PEPSI</text>
+            <rect x="22" y="34" width="4" height="12" fill="#aaa"/>
+            <rect x="10" y="32" width="18" height="4" rx="2" fill="#ccc"/>
+          </svg>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" id="pepsi-bar"></div></div>
+        <div class="progress-pct" id="pepsi-pct">0%</div>
+      </div>
+    </div>
+
+    <!-- COLA LANE -->
+    <div class="lane cola-lane">
+      <div class="lane-label">
+        <div class="lane-dot" style="background:var(--cola-red);box-shadow:0 0 6px var(--glow-red);"></div>
+        <span style="color:var(--cola-red);">COCA-COLA</span>
+        <div class="lane-speed" id="cola-speed">— km/h</div>
+      </div>
+      <div class="road" id="cola-road">
+        <div class="finish-flag">🏁</div>
+        <div class="finish-line"></div>
+        <div class="car-runner" id="cola-car" style="left:4px;">
+          <div class="exhaust">
+            <div class="exhaust-puff"></div>
+            <div class="exhaust-puff"></div>
+            <div class="exhaust-puff"></div>
+          </div>
+          <svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="42" width="160" height="36" rx="6" fill="#C8000A"/>
+            <path d="M58 42 L72 18 L138 18 L152 42Z" fill="#E31010"/>
+            <path d="M75 40 L84 22 L130 22 L140 40Z" fill="#FF8A80" opacity=".55"/>
+            <path d="M20 54 Q60 48 100 54 Q140 60 180 54 L180 60 Q140 66 100 60 Q60 54 20 60Z" fill="#fff" opacity=".25"/>
+            <rect x="20" y="64" width="160" height="4" fill="#900000"/>
+            <circle cx="58" cy="78" r="12" fill="#1a0000"/>
+            <circle cx="58" cy="78" r="7"  fill="#4a0000"/>
+            <circle cx="58" cy="78" r="3"  fill="#aaa"/>
+            <circle cx="148" cy="78" r="12" fill="#1a0000"/>
+            <circle cx="148" cy="78" r="7"  fill="#4a0000"/>
+            <circle cx="148" cy="78" r="3"  fill="#aaa"/>
+            <ellipse cx="178" cy="55" rx="8" ry="5" fill="#FFE082" opacity=".9"/>
+            <text x="100" y="50" text-anchor="middle" font-family="Orbitron,sans-serif" font-size="8" font-weight="900" fill="#FFF5E0" letter-spacing="1">COCA-COLA</text>
+            <rect x="22" y="34" width="4" height="12" fill="#aaa"/>
+            <rect x="10" y="32" width="18" height="4" rx="2" fill="#ccc"/>
+          </svg>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" id="cola-bar"></div></div>
+        <div class="progress-pct" id="cola-pct">0%</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button class="btn btn-start" id="btn-start" onclick="startRace()">⚡ START RACE</button>
+      <button class="btn btn-reset" id="btn-reset" onclick="resetRace()" disabled>↺ RESET</button>
+    </div>
+  </div>
+
+  <!-- SCOREBOARD -->
+  <div class="scoreboard">
+    <div class="score-card pepsi-score">
+      <div class="score-label">🔵 PEPSI WINS</div>
+      <div class="score-val" id="pepsi-wins">0</div>
+    </div>
+    <div class="score-card" style="background:rgba(255,255,255,.04);flex:.6;display:flex;align-items:center;justify-content:center;">
+      <span style="font-family:'Orbitron',sans-serif;font-size:.65rem;letter-spacing:2px;color:#555;">WINS</span>
+    </div>
+    <div class="score-card cola-score">
+      <div class="score-label">🔴 COCA-COLA WINS</div>
+      <div class="score-val" id="cola-wins">0</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- COUNTDOWN OVERLAY -->
+<div id="countdown"><div class="cd-num" id="cd-num">3</div></div>
+
+<!-- WINNER OVERLAY -->
+<div id="winner-overlay">
+  <div class="winner-box">
+    <div class="winner-trophy">🏆</div>
+    <div class="winner-title">RACE WINNER</div>
+    <div class="winner-name" id="w-name"></div>
+    <div class="winner-sub" id="w-sub"></div>
+    <div class="confetti-line">🎉 🏁 ⚡ 🎊 🔵 🎉</div>
+    <button class="btn-again" onclick="closeWinner()">🏎️  RACE AGAIN</button>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────
+let raceRunning   = false;
+let animFrame     = null;
+let pepsiPos      = 0;   // 0–1
+let colaPos       = 0;
+let pepsiWins     = 0;
+let colaWins      = 0;
+let lastTime      = null;
+let eventTimeout  = null;
+
+// ── TRACK PIXEL WIDTHS (measured at runtime) ──────────────────────
+function trackWidth() {
+  return document.getElementById('pepsi-road').clientWidth;
+}
+const CAR_PX = 120;  // matches car SVG width
+
+function carMaxLeft() {
+  return trackWidth() - CAR_PX - 14;  // 14 = finish line width
+}
+
+// ── RACE SPEED PARAMS (rigged: Pepsi wins) ────────────────────────
+// Speed in units/sec  (0–1 scale)
+const PEPSI_BASE = 0.18;
+const PEPSI_RAND = 0.12;
+const COLA_BASE  = 0.13;
+const COLA_RAND  = 0.10;
+
+// ── RANDOM EVENTS ─────────────────────────────────────────────────
+const EVENTS = [
+  { prob:.04, who:'pepsi', label:'⚡ PEPSI NITRO BOOST!',    speedAdd: .18, dur:500 },
+  { prob:.06, who:'cola',  label:'⚠ Cola TYRE SLIP!',        speedAdd:-.14, dur:500 },
+  { prob:.03, who:'pepsi', label:'🔥 Pepsi TURBO FIRE!',     speedAdd: .14, dur:400 },
+  { prob:.04, who:'cola',  label:'💨 Cola ENGINE SPUTTER!',  speedAdd:-.12, dur:600 },
+  { prob:.025,who:'pepsi', label:'🔧 Pepsi pit wobble…',     speedAdd:-.08, dur:300 },
+];
+
+let pepsiBoost = 0;
+let colaBoost  = 0;
+
+// ── COUNTDOWN THEN RACE ───────────────────────────────────────────
+function startRace() {
+  if (raceRunning) return;
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('btn-reset').disabled = true;
+
+  let n = 3;
+  const cdEl  = document.getElementById('countdown');
+  const cdNum = document.getElementById('cd-num');
+  cdEl.classList.add('show');
+  cdNum.textContent = n;
+
+  const tick = setInterval(() => {
+    n--;
+    if (n === 0) {
+      cdNum.textContent = 'GO! 🚀';
+      cdNum.style.color = '#00e676';
+    } else if (n < 0) {
+      clearInterval(tick);
+      cdEl.classList.remove('show');
+      cdNum.style.color = 'var(--gold)';
+      beginRace();
+    } else {
+      cdNum.textContent = n;
+      // re-trigger animation
+      cdNum.style.animation = 'none';
+      cdNum.offsetHeight;
+      cdNum.style.animation = 'cdPop .6s cubic-bezier(0.34,1.56,0.64,1) both';
+    }
+  }, 750);
+}
+
+function beginRace() {
+  raceRunning = true;
+  pepsiPos    = 0;
+  colaPos     = 0;
+  pepsiBoost  = 0;
+  colaBoost   = 0;
+  lastTime    = null;
+  document.getElementById('btn-reset').disabled = false;
+
+  // add rumble class
+  document.getElementById('pepsi-car').classList.add('racing');
+  document.getElementById('cola-car').classList.add('racing');
+
+  animFrame = requestAnimationFrame(raceLoop);
+}
+
+function raceLoop(ts) {
+  if (!raceRunning) return;
+
+  if (!lastTime) lastTime = ts;
+  const dt = Math.min((ts - lastTime) / 1000, 0.05); // cap at 50ms
+  lastTime = ts;
+
+  // Roll random events
+  EVENTS.forEach(ev => {
+    if (Math.random() < ev.prob * dt * 60) {
+      fireEvent(ev);
+    }
+  });
+
+  // Advance positions
+  const pepsiSpd = PEPSI_BASE + Math.random() * PEPSI_RAND + pepsiBoost;
+  const colaSpd  = COLA_BASE  + Math.random() * COLA_RAND  + colaBoost;
+
+  pepsiPos = Math.min(pepsiPos + pepsiSpd * dt, 1.0);
+  colaPos  = Math.min(colaPos  + colaSpd  * dt, 1.0);
+
+  // Safety: Pepsi must always win — stop Cola near finish
+  if (colaPos >= 0.97 && pepsiPos < 0.97) {
+    colaPos = 0.96;
+  }
+  if (colaPos >= 1.0 && pepsiPos < 1.0) {
+    colaPos = 0.995;
+  }
+
+  // Update UI
+  updateCarPos('pepsi-car', 'pepsi-bar', 'pepsi-pct', 'pepsi-speed', pepsiPos, Math.round((PEPSI_BASE + pepsiBoost) * 900));
+  updateCarPos('cola-car',  'cola-bar',  'cola-pct',  'cola-speed',  colaPos,  Math.round((COLA_BASE  + colaBoost)  * 900));
+
+  // Check finish
+  if (pepsiPos >= 1.0 || colaPos >= 1.0) {
+    finishRace();
+    return;
+  }
+
+  animFrame = requestAnimationFrame(raceLoop);
+}
+
+function updateCarPos(carId, barId, pctId, spdId, pos, spd) {
+  const car  = document.getElementById(carId);
+  const bar  = document.getElementById(barId);
+  const pct  = document.getElementById(pctId);
+  const spdEl= document.getElementById(spdId);
+  const leftPx = 4 + pos * carMaxLeft();
+  car.style.left  = leftPx + 'px';
+  bar.style.width = (pos * 100) + '%';
+  pct.textContent = Math.round(pos * 100) + '%';
+  spdEl.textContent = spd + ' km/h';
+}
+
+function fireEvent(ev) {
+  const ticker = document.getElementById('event-ticker');
+  ticker.style.opacity = '0';
+  setTimeout(() => {
+    ticker.textContent  = ev.label;
+    ticker.style.opacity= '1';
+  }, 150);
+
+  if (ev.who === 'pepsi') {
+    pepsiBoost += ev.speedAdd;
+    if (ev.speedAdd > 0) document.getElementById('pepsi-car').classList.add('nitro');
+    setTimeout(() => {
+      pepsiBoost -= ev.speedAdd;
+      document.getElementById('pepsi-car').classList.remove('nitro');
+    }, ev.dur);
+  } else {
+    colaBoost += ev.speedAdd;
+    setTimeout(() => { colaBoost -= ev.speedAdd; }, ev.dur);
+  }
+
+  clearTimeout(eventTimeout);
+  eventTimeout = setTimeout(() => { ticker.textContent = ''; }, 2200);
+}
+
+function finishRace() {
+  raceRunning = false;
+  cancelAnimationFrame(animFrame);
+
+  document.getElementById('pepsi-car').classList.remove('racing','nitro');
+  document.getElementById('cola-car').classList.remove('racing','nitro');
+
+  // Pepsi always wins (guaranteed by safety clamp)
+  const pepsiWon = true;
+  pepsiWins += 1;
+  document.getElementById('pepsi-wins').textContent = pepsiWins;
+
+  setTimeout(() => showWinner('pepsi'), 600);
+}
+
+function showWinner(who) {
+  const nameEl = document.getElementById('w-name');
+  const subEl  = document.getElementById('w-sub');
+  if (who === 'pepsi') {
+    nameEl.textContent  = '🔵 PEPSI';
+    nameEl.className    = 'winner-name pepsi';
+    subEl.textContent   = 'Pepsi wins with blistering speed & style!';
+  } else {
+    nameEl.textContent  = '🔴 COCA-COLA';
+    nameEl.className    = 'winner-name cola';
+    subEl.textContent   = 'Coca-Cola takes the checkered flag!';
+  }
+  document.getElementById('winner-overlay').classList.add('show');
+}
+
+function closeWinner() {
+  document.getElementById('winner-overlay').classList.remove('show');
+  resetRace();
+}
+
+function resetRace() {
+  raceRunning = false;
+  cancelAnimationFrame(animFrame);
+  pepsiPos = 0; colaPos = 0; pepsiBoost = 0; colaBoost = 0;
+
+  document.getElementById('pepsi-car').classList.remove('racing','nitro');
+  document.getElementById('cola-car').classList.remove('racing','nitro');
+  document.getElementById('pepsi-car').style.left = '4px';
+  document.getElementById('cola-car').style.left  = '4px';
+  document.getElementById('pepsi-bar').style.width = '0%';
+  document.getElementById('cola-bar').style.width  = '0%';
+  document.getElementById('pepsi-pct').textContent = '0%';
+  document.getElementById('cola-pct').textContent  = '0%';
+  document.getElementById('pepsi-speed').textContent = '— km/h';
+  document.getElementById('cola-speed').textContent  = '— km/h';
+  document.getElementById('event-ticker').textContent = 'Waiting for race start…';
+
+  document.getElementById('btn-start').disabled = false;
+  document.getElementById('btn-reset').disabled = true;
+}
+</script>
+</body>
+</html>
